@@ -5,6 +5,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { motion } from "framer-motion";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -35,7 +36,7 @@ export default function LoginForm() {
 
   return (
     <>
-      <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+      <motion.form className="flex flex-col gap-6" onSubmit={handleSubmit} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-medium">Login to your account</h1>
           <p className="text-muted-foreground text-sm text-balance font-normal">
@@ -65,8 +66,12 @@ export default function LoginForm() {
             Continue with Google
           </Button>
         </div>
-      </form>
-      {status && <p className="mt-4 text-red-600 text-sm text-center">{status}</p>}
+      </motion.form>
+      {status && (
+        <motion.p className="mt-4 text-red-600 text-sm text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          {status}
+        </motion.p>
+      )}
     </>
   );
 }
