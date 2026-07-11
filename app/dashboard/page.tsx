@@ -1,10 +1,29 @@
-import SignOutButton from "@/components/sign-out-button";
+import SearchBar from "@/components/search-bar";
 
-export default function Dashboard() {
+type PageProps = {
+  searchParams: Promise<{
+    q?: string;
+  }>;
+};
+
+export default async function Dashboard({ searchParams } : PageProps) {
+  const { q = ""} = await searchParams;
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-foreground">
-      <h1 className="text-3xl font-semibold">Dashboard</h1>
-      <SignOutButton />
-    </main>
+    <div
+      className="min-h-dvh w-full overflow-y-auto relative bg-background flex flex-col"
+      style={{
+        backgroundImage: `radial-gradient(circle, var(--grid) 1.2px, transparent 1.5px)`,
+        backgroundSize: `32px 32px`,
+      }}
+    >
+      {/* Floating Top Header (Search & Branding) */}
+      <div className="fixed top-6 z-10 w-full">
+        <SearchBar initialValue={q} queryKey="q" placeholder="Search folders..." />
+      </div>
+
+      {/* Main Content */}
+      <div>Main Content</div>
+    </div>
   );
 }
