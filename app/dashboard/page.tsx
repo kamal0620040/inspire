@@ -1,4 +1,6 @@
+import FolderSection from "@/components/folder-section";
 import SearchBar from "@/components/search-bar";
+import { createClient } from "@/lib/supabase/server";
 
 type PageProps = {
   searchParams: Promise<{
@@ -6,8 +8,22 @@ type PageProps = {
   }>;
 };
 
-export default async function Dashboard({ searchParams } : PageProps) {
-  const { q = ""} = await searchParams;
+export default async function Dashboard({ searchParams }: PageProps) {
+  const { q = "" } = await searchParams;
+  const supabase = await createClient();
+
+  let query = supabase
+    .from("folders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (q.trim()) {
+    query = query.ilike("name", `%${q}%`);
+  }
+
+  const { data, error } = await query;
+
+  console.log("Data: ", data);
 
   return (
     <div
@@ -19,11 +35,23 @@ export default async function Dashboard({ searchParams } : PageProps) {
     >
       {/* Floating Top Header (Search & Branding) */}
       <div className="fixed top-6 z-10 w-full">
-        <SearchBar initialValue={q} queryKey="q" placeholder="Search folders..." />
+        <SearchBar
+          initialValue={q}
+          queryKey="q"
+          placeholder="Search folders..."
+        />
       </div>
 
       {/* Main Content */}
-      <div>Main Content</div>
+      {error ? (
+        <div className="flex flex-col items-center justify-center h-full">
+          <p className="text-muted-foreground text-sm">
+            Error loading folders: {error.message}
+          </p>
+        </div>
+      ) : (
+        <FolderSection data={data} />
+      )}
     </div>
   );
 }
