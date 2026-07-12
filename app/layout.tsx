@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
+import UserProvider from "./provider/user-provider";
 
 const inter = Inter();
 
@@ -25,7 +26,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
+            <UserProvider>
             {children}
+            </UserProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

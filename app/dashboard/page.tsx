@@ -1,6 +1,8 @@
 import FolderSection from "@/components/folder-section";
 import SearchBar from "@/components/search-bar";
+import FloatingToolbar from "@/components/toolbar/floating-toolbar";
 import { createClient } from "@/lib/supabase/server";
+import { Folder } from "@/lib/types";
 
 type PageProps = {
   searchParams: Promise<{
@@ -14,7 +16,12 @@ export default async function Dashboard({ searchParams }: PageProps) {
 
   let query = supabase
     .from("folders")
-    .select("*")
+    .select(
+      `
+      *,
+      assets:assets(count)
+      `,
+    )
     .order("created_at", { ascending: false });
 
   if (q.trim()) {
@@ -23,7 +30,10 @@ export default async function Dashboard({ searchParams }: PageProps) {
 
   const { data, error } = await query;
 
-  console.log("Data: ", data);
+  const modifiedData = data?.map((folder) => ({
+    ...folder,
+    asset_count: folder.assets?.[0]?.count ?? 0,
+  })) as Folder[];
 
   return (
     <div
@@ -50,8 +60,9 @@ export default async function Dashboard({ searchParams }: PageProps) {
           </p>
         </div>
       ) : (
-        <FolderSection data={data} />
+        <FolderSection data={modifiedData} />
       )}
+      <FloatingToolbar showToolBar={false} />
     </div>
   );
 }
