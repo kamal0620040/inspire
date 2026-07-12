@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Folder } from "@/lib/types";
 import { useFolderPreview } from "@/hooks/use-folders";
+import { useHasEnteredViewPort } from "@/hooks/use-has-entered-viewport";
+import { useRef } from "react";
 
 const imageVariants: Variants = {
   closed: (i: number) => ({
@@ -45,10 +47,12 @@ interface FolderGlassProps {
 }
 
 export default function FolderGlass({ folder }: FolderGlassProps) {
-  const { data: displayAssets = [], isPending } = useFolderPreview(folder.id);
+  const folderRef = useRef<HTMLDivElement | null>(null);
+  const hasEnteredViewport = useHasEnteredViewPort(folderRef);
+  const { data: displayAssets = [], isPending } = useFolderPreview(folder.id, hasEnteredViewport && !!folder.asset_count);
 
   return (
-    <div className="relative h-72 w-80 group">
+    <div className="relative h-72 w-80 group" ref={folderRef}>
       <Link href={`/folder/${folder.id}`} className="block">
         <motion.div
           initial="closed"
@@ -62,7 +66,7 @@ export default function FolderGlass({ folder }: FolderGlassProps) {
           </div>
 
           {/* Fallback placeholder while loading */}
-          {isPending && (
+          {!!folder.asset_count && isPending && (
             <div className="absolute left-1/2 top-12 -translate-x-1/2 h-32 w-28 overflow-hidden rounded-2xl border border-border/60 bg-muted/80 shadow-2xl select-none pointer-events-none">
               <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.5),transparent)] bg-[length:200%_100%] animate-shimmer dark:bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.18),transparent)]" />
               <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10" />
