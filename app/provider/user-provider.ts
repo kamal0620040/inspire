@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client"; 
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 import { useUserStore } from "@/store/user-store";
+
+const RELEVANT_EVENTS = new Set([
+  "INITIAL_SESSION",
+  "SIGNED_IN",
+  "SIGNED_OUT",
+  "USER_UPDATED",
+]);
 
 export default function UserProvider({
   children,
@@ -15,15 +23,11 @@ export default function UserProvider({
 
   useEffect(() => {
     const supabase = createClient();
-
     let mounted = true;
+    const requestIdRef = { current: 0 };
 
-    async function loadUser() {
-      setLoading(true);
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    async function syncProfile(user: User | null) {
+      const requestId = ++requestIdRef.current;
 
       if (!mounted) return;
 
@@ -34,53 +38,46 @@ export default function UserProvider({
         return;
       }
 
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-      if (!mounted) return;
+        // A newer call has since started — this response is stale, ignore it.
+        if (!mounted || requestId !== requestIdRef.current) return;
 
-      if (error || !profile) {
-        setUser(null);
-      } else {
-        setUser({
-          ...profile,
-          metadata: user.user_metadata ?? {},
-        });
+        if (error || !profile) {
+          setUser(null);
+        } else {
+          setUser({
+            ...profile,
+            metadata: user.user_metadata ?? {},
+          });
+        }
+      } catch {
+        if (mounted && requestId === requestIdRef.current) {
+          setUser(null);
+        }
+      } finally {
+        if (mounted && requestId === requestIdRef.current) {
+          setLoading(false);
+          setInitialized(true);
+        }
       }
-
-      setLoading(false);
-      setInitialized(true);
     }
-
-    loadUser();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
-      if (!mounted) return;
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted || !RELEVANT_EVENTS.has(event)) return;
 
-      if (!session?.user) {
-        setUser(null);
-        return;
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+        setLoading(true);
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (!mounted) return;
-
-      if (profile) {
-        setUser({
-          ...profile,
-          metadata: session.user.user_metadata ?? {},
-        });
-      }
+      syncProfile(session?.user ?? null);
     });
 
     return () => {
