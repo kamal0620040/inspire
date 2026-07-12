@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Loader2, Search } from "lucide-react";
 import {
   InputGroup,
@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/input-group";
 import { useDebounceCallback } from "@/hooks/use-debounce-callback";
 
-export default function SearchBar({ initialValue, queryKey = "q", placeholder = "Search..." }: { initialValue: string; queryKey: string; placeholder: string }) {
+export default function SearchBar({ initialValue = "", queryKey = "q", placeholder = "Search..." }: { initialValue: string; queryKey: string; placeholder: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-
+  const [value, setValue] = useState(() => initialValue);
+  
   const onChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
 
@@ -36,8 +37,12 @@ export default function SearchBar({ initialValue, queryKey = "q", placeholder = 
     <div className="flex items-center justify-center w-full pointer-events-auto">
       <InputGroup className="h-10 max-w-xl bg-input dark:bg-input">
         <InputGroupInput
-          defaultValue={initialValue || ""}
-          onChange={(e) => debouncedOnChange(e.target.value)}
+          value={value}
+          onChange={(e) => {
+            const v = e.target.value;
+            setValue(v);
+            debouncedOnChange(v);
+          }}
           id="search"
           placeholder={placeholder}
         />
