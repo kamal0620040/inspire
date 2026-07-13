@@ -1,8 +1,10 @@
+"use client";
+
 import { useClickOutside } from "@/hooks/use-click-outside";
 import { createClient } from "@/lib/supabase/client";
 import { useUserStore } from "@/store/user-store";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, User } from "lucide-react";
 import ThemeToggle from "./theme-toggle";

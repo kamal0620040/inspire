@@ -23,11 +23,11 @@ export default function RootLayout({
       className={`${inter.className} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col scrollbar-gutter-stable">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
             <UserProvider>
-            {children}
+              {children}
             </UserProvider>
           </QueryProvider>
         </ThemeProvider>
