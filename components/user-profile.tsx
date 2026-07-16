@@ -39,14 +39,14 @@ const UserProfile = () => {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute left-0 right-0 m-auto -translate-y-4/6 mb-3 p-3 bg-glass/90 border border-white/30 backdrop-blur-xl rounded-2xl shadow-xl flex flex-col gap-2 min-w-[200px]"
+            className="absolute left-1/2 -translate-x-1/2 -translate-y-4/6 mb-3 p-3 bg-glass/90 border border-dark/80 dark:border-white/30 backdrop-blur-xl rounded-2xl shadow-xl flex flex-col gap-2 min-w-50 max-w-60"
           >
             <div className="px-2 py-1 text-muted-foreground truncate">
               <span className="font-medium text-xs text-muted-foreground">
                 Signed in as:{" "}
               </span>
               <br />
-              <span className="-mt-2 font-normal text-xs text-muted-foreground  ">
+              <span className="-mt-2 font-normal truncate max-w-2 text-xs text-muted-foreground  ">
                 {user?.email}
               </span>
             </div>
@@ -58,7 +58,7 @@ const UserProfile = () => {
             <div className="h-px bg-black/10 dark:bg-white/20" />
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-destructive hover:bg-red-100/30 cursor-pointer rounded-xl text-left transition-colors"
+              className="flex items-center gap-2 px-2 py-1.5 text-sm text-destructive hover:bg-accent cursor-pointer rounded-xl text-left"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
