@@ -25,26 +25,3 @@ export function useAssets(folderId: string) {
     enabled: !!folderId,
   });
 }
-
-export function useFolderDetail(folderId: string) {
-  const supabase = createClient();
-
-  return useQuery({
-    queryKey: ["folder", folderId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("folders")
-        .select("*")
-        .eq("id", folderId)
-        .single();
-
-      if (error) {
-        console.error(`Error fetching folder ${folderId}:`, error);
-        throw error;
-      }
-
-      return data;
-    },
-    enabled: !!folderId,
-  });
-}
