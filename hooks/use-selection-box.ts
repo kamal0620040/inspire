@@ -56,18 +56,19 @@ export function useSelectionBox({
       const x2 = Math.max(startX, currentX);
       const y2 = Math.max(startY, currentY);
 
-      return assets
-        .filter((asset) => {
-          const aw = asset.width || 200;
-          const ah = asset.height || 200;
-          return (
-            asset.x < x2 &&
-            asset.x + aw > x1 &&
-            asset.y < y2 &&
-            asset.y + ah > y1
-          );
-        })
-        .map((a) => a.id);
+      return assets.reduce<string[]>((ids, asset) => {
+        const aw = asset.width || 200;
+        const ah = asset.height || 200;
+        if (
+          asset.x < x2 &&
+          asset.x + aw > x1 &&
+          asset.y < y2 &&
+          asset.y + ah > y1
+        ) {
+          ids.push(asset.id);
+        }
+        return ids;
+      }, []);
     },
     [assets]
   );

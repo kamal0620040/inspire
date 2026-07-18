@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Asset } from "@/lib/types";
 import { UseMutationResult } from "@tanstack/react-query";
 import { useUpdateAssetLayout } from "@/hooks/use-asset-mutations";
@@ -25,6 +25,7 @@ export function useCanvasKeyboard({
   setSelection,
 }: UseCanvasKeyboardOptions) {
   const updateLayoutMutation = useUpdateAssetLayout(folderId);
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -53,12 +54,14 @@ export function useCanvasKeyboard({
         selectedIds.length > 0
       ) {
         e.preventDefault();
-        const selectedAssets = assets.filter((a) => selectedIds.includes(a.id));
-        const newSelection: string[] = [];
-        for (const asset of selectedAssets) {
-          const res = await duplicateAssetMutation.mutateAsync(asset);
-          if (res?.id) newSelection.push(res.id);
-        }
+        const selectedAssets = assets.reduce<Asset[]>((acc, a) => {
+          if (selectedIdSet.has(a.id)) acc.push(a);
+          return acc;
+        }, []);
+        const results = await Promise.all(
+          selectedAssets.map((asset) => duplicateAssetMutation.mutateAsync(asset))
+        );
+        const newSelection = results.filter((res) => res?.id).map((res) => res.id);
         setSelection(newSelection);
       }
 
@@ -70,7 +73,7 @@ export function useCanvasKeyboard({
         selectedIds.length > 0
       ) {
         e.preventDefault();
-        const selectedAssets = assets.filter((a) => selectedIds.includes(a.id));
+        const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
         await Promise.all(
           selectedAssets.map((asset) =>
             updateLayoutMutation.mutateAsync({
@@ -87,7 +90,7 @@ export function useCanvasKeyboard({
         selectedIds.length > 0
       ) {
         e.preventDefault();
-        const selectedAssets = assets.filter((a) => selectedIds.includes(a.id));
+        const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
         await Promise.all(
           selectedAssets.map((asset) =>
             updateLayoutMutation.mutateAsync({
@@ -104,7 +107,7 @@ export function useCanvasKeyboard({
         selectedIds.length > 0
       ) {
         e.preventDefault();
-        const selectedAssets = assets.filter((a) => selectedIds.includes(a.id));
+        const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
         await Promise.all(
           selectedAssets.map((asset) =>
             updateLayoutMutation.mutateAsync({
@@ -123,7 +126,7 @@ export function useCanvasKeyboard({
         selectedIds.length > 0
       ) {
         e.preventDefault();
-        const selectedAssets = assets.filter((a) => selectedIds.includes(a.id));
+        const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
         await Promise.all(
           selectedAssets.map((asset) =>
             updateLayoutMutation.mutateAsync({
@@ -141,6 +144,7 @@ export function useCanvasKeyboard({
   }, [
     folderId,
     selectedIds,
+    selectedIdSet,
     assets,
     deleteAssetsMutation,
     duplicateAssetMutation,
