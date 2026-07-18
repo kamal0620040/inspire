@@ -1,32 +1,47 @@
-import { NextResponse } from 'next/server'
-// The client you created from the Server-Side Auth instructions
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+function sanitizeRedirectPath(raw: string | null): string {
+  if (!raw) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  try {
+    const url = new URL(raw, "http://localhost");
+    if (url.origin !== "http://localhost") return "/";
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return "/";
+  }
+}
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
-  let next = searchParams.get('next') ?? '/'
-  if (!next.startsWith('/')) {
-    // if "next" is not a relative URL, use the default
-    next = '/'
-  }
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = sanitizeRedirectPath(searchParams.get("next"));
+
+  const supabase = await createClient();
+
+  // OAuth flow: exchange code for session
   if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
-      }
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      return NextResponse.redirect(`${origin}/error`);
+    }
+  } else {
+    // Magic link flow: Supabase verify page already set session cookies.
+    // Just check that the user is actually authenticated.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.redirect(`${origin}/login`);
     }
   }
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/error`)
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const isLocalEnv = process.env.NODE_ENV === "development";
+  if (isLocalEnv) {
+    return NextResponse.redirect(`${origin}${next}`);
+  } else if (forwardedHost) {
+    return NextResponse.redirect(`https://${forwardedHost}${next}`);
+  } else {
+    return NextResponse.redirect(`${origin}${next}`);
+  }
 }
