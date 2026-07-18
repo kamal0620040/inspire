@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { Loader2, Search } from "lucide-react";
 import {
   InputGroup,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/input-group";
 import { useDebounceCallback } from "@/hooks/use-debounce-callback";
 
-export default function SearchBar({ initialValue = "", queryKey = "q", placeholder = "Search..." }: { initialValue: string; queryKey: string; placeholder: string }) {
+function SearchBarInner({ initialValue = "", queryKey = "q", placeholder = "Search..." }: { initialValue: string; queryKey: string; placeholder: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -57,5 +57,13 @@ export default function SearchBar({ initialValue = "", queryKey = "q", placehold
         </InputGroupAddon>
       </InputGroup>
      </div>
+  );
+}
+
+export default function SearchBar(props: { initialValue: string; queryKey: string; placeholder: string }) {
+  return (
+    <Suspense fallback={null}>
+      <SearchBarInner {...props} />
+    </Suspense>
   );
 }

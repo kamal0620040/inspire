@@ -7,17 +7,13 @@ interface PageProps {
 }
 
 export default async function FolderPage({ params }: PageProps) {
-  const { id } = await params;
-
-  const supabase = await createClient();
+  const [{ id }, supabase] = await Promise.all([params, createClient()]);
   
-  const query = supabase
+  const { data, error } = await supabase
       .from("folders")
       .select("*")
       .eq("id", id)
-      .single();;
-  
-  const { data, error } = await query;
+      .single();
 
   if (error) {
     throw new Error(error.message);

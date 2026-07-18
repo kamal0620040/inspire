@@ -155,9 +155,10 @@ export default function CreateFolderCard() {
 
                 <div className="flex justify-end gap-2">
                   <button
+                    type="reset"
                     disabled={isPending}
                     onClick={reset}
-                    type="reset"
+                    aria-label="Cancel"
                     className="rounded-lg p-2 hover:bg-white/10 transition"
                   >
                     <X size={18} />

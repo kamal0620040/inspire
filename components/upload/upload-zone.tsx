@@ -151,6 +151,7 @@ export default function UploadZone({
 
               {isUploading && (
                 <button
+                  type="button"
                   onClick={cancelUpload}
                   className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
                 >
@@ -165,8 +166,8 @@ export default function UploadZone({
               <div className="mb-3">
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                   <motion.div
-                    className="h-full rounded-full bg-blue-500"
-                    animate={{ width: `${uploadProgress}%` }}
+                    className="h-full rounded-full bg-blue-500 origin-left"
+                    animate={{ scaleX: uploadProgress / 100 }}
                     transition={{ duration: 0.3 }}
                   />
                 </div>

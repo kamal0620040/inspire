@@ -16,8 +16,10 @@ export default function ThemeToggle() {
   if (!mounted) {
     return (
       <button
+        type="button"
         className="inline-flex h-10 w-10 items-center justify-center rounded-lg border"
         aria-label="Toggle theme"
+        suppressHydrationWarning
       />
     );
   }
@@ -26,6 +28,7 @@ export default function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-lg border transition hover:bg-accent"
       aria-label="Toggle theme"

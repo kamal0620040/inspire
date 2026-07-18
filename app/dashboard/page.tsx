@@ -11,8 +11,7 @@ type PageProps = {
 };
 
 export default async function Dashboard({ searchParams }: PageProps) {
-  const { q = "" } = await searchParams;
-  const supabase = await createClient();
+  const [{ q = "" }, supabase] = await Promise.all([searchParams, createClient()]);
 
   let query = supabase
     .from("folders")

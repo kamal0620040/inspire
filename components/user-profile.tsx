@@ -57,6 +57,7 @@ const UserProfile = () => {
             </div>
             <div className="h-px bg-black/10 dark:bg-white/20" />
             <button
+              type="button"
               onClick={handleSignOut}
               className="flex items-center gap-2 px-2 py-1.5 text-sm text-destructive hover:bg-accent cursor-pointer rounded-xl text-left"
             >
@@ -69,6 +70,7 @@ const UserProfile = () => {
 
         {/* Profile Avatar Trigger */}
         <button
+          type="button"
           onClick={() => setShowUserMenu(!showUserMenu)}
           className={`h-10 w-10 rounded-full flex items-center justify-center bg-neutral-200 overflow-hidden cursor-pointer transition-all hover:scale-105 active:scale-95 border border-neutral-300 select-none ${
             showUserMenu ? "ring-2 ring-neutral-400" : ""

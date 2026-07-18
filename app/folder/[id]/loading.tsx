@@ -34,9 +34,9 @@ export default function Loading() {
 
           {/* Spinner */}
           <div className="mt-2 flex gap-2">
-            <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:-0.2s]" />
-            <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:-0.1s]" />
-            <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-muted-foreground/50" />
+            <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted-foreground/50 [animation-delay:-0.2s]" />
+            <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted-foreground/50 [animation-delay:-0.1s]" />
+            <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-muted-foreground/50" />
           </div>
         </div>
       </div>

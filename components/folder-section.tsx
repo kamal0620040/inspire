@@ -32,7 +32,7 @@ export default function FolderSection({
           >
             <CreateFolderCard />
           </motion.div>
-        <AnimatePresence mode="sync">
+        <AnimatePresence mode="popLayout">
           {data.map((folder) => (
             <motion.div
               key={folder.id}

@@ -44,13 +44,15 @@ export function FolderActions({ folder }: FolderActionsProps) {
   if (!mounted) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" suppressHydrationWarning>
       {/* Trigger Button */}
       <button
+        type="button"
         ref={anchorRef}
         onClick={() => {
           setIsOpen(!isOpen);
         }}
+        aria-label="Folder actions"
         className="px-1.5 py-1.5 text-shadow-muted-foreground rounded-full cursor-pointer hover:bg-white/30 transition-all shadow-md hover:text-neutral-900 active:scale-95"
       >
         <MoreVertical className="h-4 w-4" />
@@ -70,6 +72,7 @@ export function FolderActions({ folder }: FolderActionsProps) {
               className="fixed z-50 w-48 rounded-2xl p-1.5 flex flex-col gap-0.5 border border-dark/80 dark:border-white/30 bg-glass/85 backdrop-blur-xl shadow-md"
             >
               <button
+                type="button"
                 onClick={() => setIsRenaming(true)}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left rounded-xl text-muted-foreground hover:bg-white/10 transition-colors"
               >
@@ -78,6 +81,7 @@ export function FolderActions({ folder }: FolderActionsProps) {
               </button>
               <div className="h-px bg-black/10 dark:bg-white/20 my-1" />
               <button
+                type="button"
                 onClick={handleDelete}
                 className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left rounded-xl text-destructive hover:bg-accent transition-colors"
               >
