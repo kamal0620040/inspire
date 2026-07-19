@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Keyboard, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useClickOutside } from "@/hooks/use-click-outside";
 
 interface ShortcutGroup {
   title: string;
@@ -57,6 +58,20 @@ export function KeyboardShortcutsPanel({ variant = "canvas" }: { variant?: "canv
 
   const shortcuts = variant === "canvas" ? canvasShortcuts : previewShortcuts;
 
+  const menuRed = useRef<HTMLDivElement>(null);
+
+  useClickOutside(menuRed, () => {
+    setIsOpen(false);
+  });
+
+  useEffect(() => {
+    const el = menuRed.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => e.stopImmediatePropagation();
+    el.addEventListener("wheel", handler);
+    return () => el.removeEventListener("wheel", handler);
+  });
+
   return (
     <div className="fixed bottom-4 right-4 z-40">
       <AnimatePresence>
@@ -66,6 +81,7 @@ export function KeyboardShortcutsPanel({ variant = "canvas" }: { variant?: "canv
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
+            ref={menuRed}
             className="absolute bottom-12 right-0 w-72 bg-glass/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl overflow-hidden"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
