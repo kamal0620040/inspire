@@ -2,11 +2,11 @@
 
 import { useMotionValue, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useTransition } from "react";
 import { Asset } from "@/lib/types";
 import { useUIStore } from "@/store/ui-store";
 import { useUpdateAssetLayout, useDeleteAsset } from "@/hooks/use-asset-mutations";
-import { Trash2, Film, Eye, RotateCw } from "lucide-react";
+import { Trash2, Film, Eye, RotateCw, Loader2 } from "lucide-react";
 import LazyImage from "@/components/media/lazy-image";
 import LazyVideo from "@/components/media/lazy-video";
 
@@ -36,9 +36,12 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
   const dragStart = useRef({ x: 0, y: 0 });
   const dragStartPos = useRef({ x: 0, y: 0 });
 
+  const [isDeleting, startTransition] = useTransition();
+
   useEffect(() => {
     x.set(asset.x);
     y.set(asset.y);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalZIndex(asset.z_index);
     setLocalRotation(asset.rotation);
     setLocalScale(asset.scale);
@@ -55,8 +58,6 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
 
     e.stopPropagation();
     selectAsset(asset.id, e.shiftKey);
-
-    if (currentTool !== "select") return;
 
     isDragging.current = true;
     dragStart.current = { x: e.clientX, y: e.clientY };
@@ -119,7 +120,9 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
     e.stopPropagation();
     e.preventDefault();
     if (confirm("Delete this asset?")) {
-      await deleteAssetMutation.mutateAsync(asset.id);
+      startTransition(async () => {
+        await deleteAssetMutation.mutateAsync(asset.id);
+      });
     }
   };
 
@@ -186,7 +189,10 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
       }`}
     >
       {/* Media Rendering */}
-      <div className="w-full h-full relative select-none pointer-events-none">
+      <div className={`w-full h-full relative select-none pointer-events-none ${isDeleting ? 'opacity-50' : ''}`}>
+        {isDeleting && (
+          <Loader2 className="absolute z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 text-white animate-spin" />
+        )}
         {asset.type === "image" ? (
           <LazyImage
             src={asset.url}
@@ -234,7 +240,7 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
           >
             −
           </button>
-          <span className="px-1.5 py-0.5 bg-black/60 rounded text-white text-[10px] font-medium min-w-[40px] text-center">
+          <span className="p-1 bg-black/60 rounded text-white text-[10px] font-medium min-w-[40px] text-center">
             {Math.round(localScale * 100)}%
           </span>
           <button
