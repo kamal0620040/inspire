@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { motion, useTransform } from "framer-motion";
 import { useAssets } from "@/hooks/use-assets";
 import { useCamera } from "@/hooks/use-camera";
@@ -13,7 +13,6 @@ import CanvasAsset from "./canvas-asset";
 import { CanvasLoadingOverlay } from "./canvas-loading-overlay";
 import { MediaPreview } from "@/components/media/media-preview";
 import { KeyboardShortcutsPanel } from "@/components/ui/keyboard-shortcuts";
-import { Asset } from "@/lib/types";
 
 interface CanvasViewProps {
   folderId: string;
@@ -32,7 +31,6 @@ export default function CanvasView({ folderId }: CanvasViewProps) {
     cameraX,
     cameraY,
     zoom,
-    handleWheel,
     handlePointerDown: cameraPointerDown,
     handlePointerMove: cameraPointerMove,
     handlePointerUp: cameraPointerUp,
@@ -68,11 +66,6 @@ export default function CanvasView({ folderId }: CanvasViewProps) {
 
   const { visibleAssets } = useViewportCulling({ assets });
 
-  const handleWheelRef = useRef(handleWheel);
-  useEffect(() => {
-    handleWheelRef.current = handleWheel;
-  });
-
   const openPreview = (assetId: string) => {
     const index = assets.findIndex((a) => a.id === assetId);
     if (index !== -1) {
@@ -80,15 +73,6 @@ export default function CanvasView({ folderId }: CanvasViewProps) {
       setPreviewOpen(true);
     }
   };
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handler = (e: WheelEvent) => handleWheelRef.current(e);
-    container.addEventListener("wheel", handler, { passive: false });
-    return () => container.removeEventListener("wheel", handler);
-  }, [containerRef]);
 
   const onPointerDown = (e: React.PointerEvent) => {
     const isMiddleClick = e.button === 1;

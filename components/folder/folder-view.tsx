@@ -53,7 +53,7 @@ export default function FolderView({ folderData }: FolderViewProps) {
         </div>
 
         {/* Center: View Switcher Toggle */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center p-1 bg-glass/85 border border-white/35 backdrop-blur-xl rounded-full shadow-md pointer-events-auto select-none">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center p-1 bg-glass/85 border border-dark/80 dark:border-white/30 backdrop-blur-xl rounded-full shadow-md pointer-events-auto select-none">
           <button
             type="button"
             onClick={() => handleViewChange("canvas")}
@@ -79,7 +79,7 @@ export default function FolderView({ folderData }: FolderViewProps) {
         </div>
 
         {/* Right: Zoom Indicator */}
-        <div className="px-4 py-2.5 bg-glass/85 border border-white/35 backdrop-blur-xl rounded-full shadow-md pointer-events-auto text-xs font-semibold min-w-14 text-muted-foreground text-center">
+        <div className="px-4 py-2.5 bg-glass/85 border border-dark/80 dark:border-white/30 backdrop-blur-xl rounded-full shadow-md pointer-events-auto text-xs font-semibold min-w-14 text-muted-foreground text-center">
           {currentView === "canvas" ? `${zoomPercentage}%` : "—"}
         </div>
       </div>
