@@ -1,3 +1,4 @@
+import AssetsContainer from "@/components/assets-container";
 import { Dot } from "lucide-react";
 import Link from "next/link";
 
@@ -12,10 +13,11 @@ export default function Home() {
               </Link>
             </div>
 
-            <h1 className="text-foreground font-medium">canvas</h1>
+            <h1 className="text-foreground font-medium">inspire</h1>
             <p className="text-muted-foreground antialiased">Collect images and videos on an infinite canvas.</p>
-            <p className="text-muted-foreground antialiased">Built for personal use. Fast loading, minimal interface, no onboarding, no tracking, no ads.</p>
+            <p className="text-muted-foreground antialiased">Built for personal use. Fast loading, minimal interface, no onboarding, no tracking.</p>
         </div>
+        <AssetsContainer />
       </div>
   );
 }

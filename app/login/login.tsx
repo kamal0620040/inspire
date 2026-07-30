@@ -11,12 +11,14 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
   const supabase = createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
 
   const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const origin = siteUrl || window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+      options: { emailRedirectTo: `${origin}/auth/callback?next=/dashboard` },
     });
     if (error) {
       setStatus(error.message);
@@ -26,10 +28,11 @@ export default function LoginForm() {
   };
 
   const handleGoogleLogin = async () => {
+    const origin = siteUrl || window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${origin}/auth/callback?next=/dashboard`,
       },
     });
   };
@@ -56,13 +59,13 @@ export default function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </Field>
-          <Button type="submit">Continue with Email</Button>
+          <Button type="submit" className="cursor-pointer">Continue with Email</Button>
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
               Or continue with
             </span>
           </div>
-          <Button variant="outline" onClick={handleGoogleLogin}>
+          <Button variant="outline" className="cursor-pointer" onClick={handleGoogleLogin}>
             Continue with Google
           </Button>
         </div>

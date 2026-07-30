@@ -15,33 +15,31 @@ function sanitizeRedirectPath(raw: string | null): string {
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
   const code = searchParams.get("code");
   const next = sanitizeRedirectPath(searchParams.get("next"));
 
   const supabase = await createClient();
 
-  // OAuth flow: exchange code for session
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      return NextResponse.redirect(`${origin}/error`);
+      return NextResponse.redirect(`${siteUrl}/error`);
     }
   } else {
-    // Magic link flow: Supabase verify page already set session cookies.
-    // Just check that the user is actually authenticated.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.redirect(`${origin}/login`);
+      return NextResponse.redirect(`${siteUrl}/login`);
     }
   }
 
   const forwardedHost = request.headers.get("x-forwarded-host");
   const isLocalEnv = process.env.NODE_ENV === "development";
   if (isLocalEnv) {
-    return NextResponse.redirect(`${origin}${next}`);
+    return NextResponse.redirect(`${siteUrl}${next}`);
   } else if (forwardedHost) {
     return NextResponse.redirect(`https://${forwardedHost}${next}`);
   } else {
-    return NextResponse.redirect(`${origin}${next}`);
+    return NextResponse.redirect(`${siteUrl}${next}`);
   }
 }

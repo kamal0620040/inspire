@@ -9,7 +9,7 @@ const Login = async () => {
         <div className="flex justify-center gap-2 md:justify-start">
           <Link href="/" className="flex items-center gap-2 font-medium">
             <Dot strokeWidth={8} className="text-destructive mt-1" />
-            canvas
+            inspire
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
