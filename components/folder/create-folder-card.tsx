@@ -159,7 +159,7 @@ export default function CreateFolderCard() {
                     disabled={isPending}
                     onClick={reset}
                     aria-label="Cancel"
-                    className="rounded-lg p-2 hover:bg-white/10 transition"
+                    className="cursor-pointer rounded-lg p-2 hover:bg-white/10 transition"
                   >
                     <X size={18} />
                   </button>
@@ -167,7 +167,7 @@ export default function CreateFolderCard() {
                   <Button
                     disabled={isPending || !folderName.trim()}
                     onClick={handleCreate}
-                    className="flex items-center justify-center rounded-lg bg-white px-4 text-black transition disabled:opacity-50"
+                    className="cursor-pointer flex items-center justify-center rounded-lg bg-white px-4 text-black transition disabled:opacity-50"
                   >
                     {isPending ? (
                       <Loader2 size={18} className="animate-spin" />

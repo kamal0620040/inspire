@@ -83,6 +83,7 @@ export function RenameFolderModal({ open, setOpen, folder }: { open: boolean; se
               e.preventDefault();
               handleCreate();
             }}
+            className="cursor-pointer"
             >
               {isPending ? <Loader2 className="animate-spin" /> : "Submit"}
             </Button>

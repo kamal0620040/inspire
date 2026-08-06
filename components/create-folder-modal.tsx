@@ -85,6 +85,7 @@ export function CreateFolderModal({ children }: { children: React.ReactElement }
               e.preventDefault();
               handleCreate();
             }}
+            className="cursor-pointer"
             >
               {isPending ? <Loader2 className="animate-spin" /> : "Submit"}
             </Button>

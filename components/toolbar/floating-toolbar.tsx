@@ -24,7 +24,7 @@ const ToolbarButton = forwardRef<
       ref={ref}
       type="button"
       className={cn(
-        "h-10 w-10 rounded-full flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800 transition-all hover:scale-105 active:scale-95 border border-neutral-200 shadow-sm",
+        "cursor-pointer h-10 w-10 rounded-full flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800 transition-all hover:scale-105 active:scale-95 border border-neutral-200 shadow-sm",
         className
       )}
       {...props}

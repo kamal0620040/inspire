@@ -74,7 +74,7 @@ export function FolderActions({ folder }: FolderActionsProps) {
               <button
                 type="button"
                 onClick={() => setIsRenaming(true)}
-                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left rounded-xl text-muted-foreground hover:bg-white/10 transition-colors"
+                className="cursor-pointer flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left rounded-xl text-muted-foreground hover:bg-white/10 transition-colors"
               >
                 <Edit2 className="h-4 w-4" />
                 Rename Folder
@@ -83,7 +83,7 @@ export function FolderActions({ folder }: FolderActionsProps) {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left rounded-xl text-destructive hover:bg-accent transition-colors"
+                className="cursor-pointer flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left rounded-xl text-destructive hover:bg-accent transition-colors"
               >
                 {isFolderDeleting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
