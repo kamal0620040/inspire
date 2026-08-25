@@ -4,9 +4,9 @@ import { useClickOutside } from "@/hooks/use-click-outside";
 import { createClient } from "@/lib/supabase/client";
 import { useUserStore } from "@/store/user-store";
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogOut, User } from "lucide-react";
+import { Loader2, LogOut, User } from "lucide-react";
 import ThemeToggle from "./theme-toggle";
 import Image from "next/image";
 
@@ -14,13 +14,24 @@ const UserProfile = () => {
   const router = useRouter();
   const { initialized, loading, user } = useUserStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const supabase = createClient();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut({ scope: "local" });
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+    setShowUserMenu(false);
+    useUserStore.getState().clearUser();
     router.replace("/login");
     router.refresh();
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Local session is already cleared; revoking server-side is best-effort.
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   const closeUserMenu = useCallback(() => {
@@ -28,6 +39,14 @@ const UserProfile = () => {
   }, []);
 
   useClickOutside(wrapperRef, closeUserMenu, showUserMenu);
+
+  // Close transient menu when the route is hidden by Activity preservation.
+  useLayoutEffect(() => {
+    return () => {
+      setShowUserMenu(false);
+      setIsSigningOut(false);
+    };
+  }, []);
 
   return (
     <>
@@ -59,9 +78,14 @@ const UserProfile = () => {
             <button
               type="button"
               onClick={handleSignOut}
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-destructive hover:bg-accent cursor-pointer rounded-xl text-left"
+              disabled={isSigningOut}
+              className="flex items-center gap-2 px-2 py-1.5 text-sm text-destructive hover:bg-accent cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed rounded-xl text-left"
             >
-              <LogOut className="h-4 w-4" />
+              {isSigningOut ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
               Sign Out
             </button>
           </motion.div>

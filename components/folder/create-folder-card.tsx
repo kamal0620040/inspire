@@ -167,7 +167,7 @@ export default function CreateFolderCard() {
                   <Button
                     disabled={isPending || !folderName.trim()}
                     onClick={handleCreate}
-                    className="cursor-pointer flex items-center justify-center rounded-lg bg-white px-4 text-black transition disabled:opacity-50"
+                    className="cursor-pointer flex items-center justify-center rounded-lg bg-white px-4 text-black transition hover:bg-white/90 disabled:opacity-50"
                   >
                     {isPending ? (
                       <Loader2 size={18} className="animate-spin" />
