@@ -80,7 +80,7 @@ Built for personal use. Fast loading, minimal interface, no onboarding, no track
 ### Prerequisites
 
 - Node.js >= 18
-- A Supabase project (free tier works)
+- A Supabase project
 
 ### Supabase Setup
 

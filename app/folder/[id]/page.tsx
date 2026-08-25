@@ -1,23 +1,29 @@
 import FolderView from "@/components/folder/folder-view";
+import FolderViewSkeleton from "@/components/folder/folder-view-skeleton";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
+import { Suspense } from "react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function FolderPage({ params }: PageProps) {
+export default function FolderPage({ params }: PageProps) {
+  return (
+    <Suspense fallback={<FolderViewSkeleton />}>
+      <FolderContent params={params} />
+    </Suspense>
+  );
+}
+
+async function FolderContent({ params }: Pick<PageProps, "params">) {
   const [{ id }, supabase] = await Promise.all([params, createClient()]);
-  
+
   const { data, error } = await supabase
-      .from("folders")
-      .select("*")
-      .eq("id", id)
-      .single();
+    .from("folders")
+    .select("*")
+    .eq("id", id)
+    .single();
 
   if (error) {
     throw new Error(error.message);

@@ -2,11 +2,7 @@ import { Dot } from "lucide-react";
 import Link from "next/link";
 import LoginForm from "./login";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
-const Login = async () => {
+const Login = () => {
   return (
     <div className="grid min-h-svh max-h-svh lg:grid-cols-2 bg-background">
       <div className="flex flex-col gap-4 p-6 md:p-10">
