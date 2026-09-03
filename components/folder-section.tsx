@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import CreateFolderCard from "./folder/create-folder-card";
 import FolderGlass from "./folder";
-import { Folder } from "@/lib/types";
+import { FolderWithPreview } from "@/lib/types";
 
 interface FolderSectionProps {
-  data: Folder[];
+  data: FolderWithPreview[];
 }
 
 export default function FolderSection({

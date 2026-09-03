@@ -3,10 +3,7 @@
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Folder } from "@/lib/types";
-import { useFolderPreview } from "@/hooks/use-folders";
-import { useHasEnteredViewPort } from "@/hooks/use-has-entered-viewport";
-import { useRef } from "react";
+import { FolderWithPreview } from "@/lib/types";
 
 const imageVariants: Variants = {
   closed: (i: number) => ({
@@ -43,16 +40,14 @@ const coverVariants: Variants = {
 };
 
 interface FolderGlassProps {
-  folder: Folder;
+  folder: FolderWithPreview;
 }
 
 export default function FolderGlass({ folder }: FolderGlassProps) {
-  const folderRef = useRef<HTMLDivElement | null>(null);
-  const hasEnteredViewport = useHasEnteredViewPort(folderRef);
-  const { data: displayAssets = [], isPending } = useFolderPreview(folder.id, hasEnteredViewport && !!folder.asset_count);
+  const displayAssets = folder.preview_assets ?? [];
 
   return (
-    <div className="relative h-72 w-80 group" ref={folderRef}>
+    <div className="relative h-72 w-80 group">
       <Link href={`/folder/${folder.id}`} className="block">
         <motion.div
           initial="closed"
@@ -65,16 +60,8 @@ export default function FolderGlass({ folder }: FolderGlassProps) {
             <div className="absolute inset-0 rounded-4xl border border-folder-stroke/40 shadow-xl" />
           </div>
 
-          {/* Fallback placeholder while loading */}
-          {!!folder.asset_count && isPending && (
-            <div className="absolute left-1/2 top-12 -translate-x-1/2 h-32 w-28 overflow-hidden rounded-2xl border border-border/60 bg-muted/80 shadow-2xl select-none pointer-events-none">
-              <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.5),transparent)] bg-[length:200%_100%] animate-shimmer dark:bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.18),transparent)]" />
-              <div className="absolute inset-0 rounded-2xl ring-1 ring-white/10" />
-            </div>
-          )}
-
           {/* Dynamic preview assets fanning out */}
-          {!isPending && displayAssets.slice(0, 3).map((asset, i) => (
+          {displayAssets.slice(0, 3).map((asset, i) => (
             <motion.div
               key={asset.id}
               custom={i}

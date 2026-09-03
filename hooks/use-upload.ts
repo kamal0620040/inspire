@@ -222,6 +222,7 @@ export function useUpload(folderId: string): UseUploadReturn {
 
       queryClient.invalidateQueries({ queryKey: ["assets", folderId] });
       queryClient.invalidateQueries({ queryKey: ["folder-preview", folderId] });
+      queryClient.invalidateQueries({ queryKey: ["folder-previews"] });
       queryClient.invalidateQueries({ queryKey: ["folders"] });
 
     } catch (err) {

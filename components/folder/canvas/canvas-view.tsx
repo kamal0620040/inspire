@@ -5,7 +5,7 @@ import { motion, useTransform } from "framer-motion";
 import { useAssets } from "@/hooks/use-assets";
 import { useCamera } from "@/hooks/use-camera";
 import { useUIStore } from "@/store/ui-store";
-import { useDeleteAssets, useDuplicateAsset } from "@/hooks/use-asset-mutations";
+import { useDeleteAssets, useDuplicateAssets } from "@/hooks/use-asset-mutations";
 import { useSelectionBox } from "@/hooks/use-selection-box";
 import { useCanvasKeyboard } from "@/hooks/use-canvas-keyboard";
 import { useViewportCulling } from "@/hooks/use-viewport-culling";
@@ -21,7 +21,7 @@ interface CanvasViewProps {
 export default function CanvasView({ folderId }: CanvasViewProps) {
   const { data: assets = [], isLoading, isLoadingError } = useAssets(folderId);
   const deleteAssetsMutation = useDeleteAssets(folderId);
-  const duplicateAssetMutation = useDuplicateAsset(folderId);
+  const duplicateAssetsMutation = useDuplicateAssets(folderId);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -59,7 +59,7 @@ export default function CanvasView({ folderId }: CanvasViewProps) {
     selectedIds,
     assets,
     deleteAssetsMutation,
-    duplicateAssetMutation,
+    duplicateAssetsMutation,
     clearSelection,
     setSelection,
   });

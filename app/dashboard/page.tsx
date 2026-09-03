@@ -4,7 +4,7 @@ import FloatingToolbar from "@/components/toolbar/floating-toolbar";
 import BfcacheReset from "@/components/bfcache-reset";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/server";
-import { Folder } from "@/lib/types";
+import { Folder, FolderPreview, FolderWithPreview } from "@/lib/types";
 import { Suspense } from "react";
 
 type PageProps = {
@@ -53,10 +53,61 @@ async function DashboardContent({
 
   const { data, error } = await query;
 
-  const modifiedData = data?.map((folder) => ({
+  if (error) {
+    return (
+      <>
+        {/* Floating Top Header (Search & Branding) */}
+        <div className="fixed top-6 z-10 w-full">
+          <SearchBar
+            initialValue={q}
+            queryKey="q"
+            placeholder="Search folders..."
+          />
+        </div>
+        <div className="flex flex-col items-center justify-center h-full">
+          <p className="text-muted-foreground text-sm">
+            Error loading folders: {error.message}
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  const folders = (data ?? []).map((folder) => ({
     ...folder,
     asset_count: folder.assets?.[0]?.count ?? 0,
   })) as Folder[];
+
+  // Batch previews in ONE query instead of N per-folder queries (fixes N+1).
+  // PostgREST can't limit per-parent in an embed, so fetch preview columns
+  // for all visible folders at once and slice top 3 per folder in JS.
+  const foldersWithAssets = folders.filter((f) => (f.asset_count ?? 0) > 0);
+  let previewByFolder = new Map<string, FolderPreview[]>();
+  if (foldersWithAssets.length > 0) {
+    const { data: previews } = await supabase
+      .from("assets")
+      .select("id, folder_id, url, thumbnail_url, type, created_at")
+      .in(
+        "folder_id",
+        foldersWithAssets.map((f) => f.id)
+      )
+      .order("created_at", { ascending: false });
+
+    for (const row of (previews ?? []) as (FolderPreview & {
+      created_at: string;
+    })[]) {
+      const list = previewByFolder.get(row.folder_id);
+      if (list && list.length >= 3) continue;
+      const { created_at: _createdAt, ...preview } = row;
+      if (list) list.push(preview);
+      else previewByFolder.set(row.folder_id, [preview]);
+    }
+  }
+
+  const modifiedData: FolderWithPreview[] = folders.map((folder) => ({
+    ...folder,
+    preview_assets: previewByFolder.get(folder.id) ?? [],
+  }));
 
   return (
     <>
@@ -70,15 +121,7 @@ async function DashboardContent({
       </div>
 
       {/* Main Content */}
-      {error ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <p className="text-muted-foreground text-sm">
-            Error loading folders: {error.message}
-          </p>
-        </div>
-      ) : (
-        <FolderSection data={modifiedData} />
-      )}
+      <FolderSection data={modifiedData} />
     </>
   );
 }

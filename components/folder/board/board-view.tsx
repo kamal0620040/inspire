@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAssets } from "@/hooks/use-assets";
-import { useDeleteAssets, useDuplicateAsset } from "@/hooks/use-asset-mutations";
+import { useDeleteAssets, useDuplicateAssets } from "@/hooks/use-asset-mutations";
 import { useCanvasKeyboard } from "@/hooks/use-canvas-keyboard";
 import { useUIStore } from "@/store/ui-store";
 import { useResponsiveColumns } from "@/hooks/use-responsive-columns";
@@ -23,7 +23,7 @@ const GAP = 24;
 export default function BoardView({ folderId }: BoardViewProps) {
   const { data: assets = [], isLoading, error } = useAssets(folderId);
   const deleteAssetsMutation = useDeleteAssets(folderId);
-  const duplicateAssetMutation = useDuplicateAsset(folderId);
+  const duplicateAssetsMutation = useDuplicateAssets(folderId);
 
   const { selectedIds, setSelection, clearSelection } = useUIStore();
 
@@ -38,7 +38,7 @@ export default function BoardView({ folderId }: BoardViewProps) {
     selectedIds,
     assets,
     deleteAssetsMutation,
-    duplicateAssetMutation,
+    duplicateAssetsMutation,
     clearSelection,
     setSelection,
   });

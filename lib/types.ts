@@ -19,6 +19,18 @@ export interface Folder {
   asset_count?: number;
 }
 
+export interface FolderPreview {
+  id: string;
+  folder_id: string;
+  url: string;
+  thumbnail_url: string | null;
+  type: "image" | "video";
+}
+
+export interface FolderWithPreview extends Folder {
+  preview_assets: FolderPreview[];
+}
+
 export interface Asset {
   id: string;
   folder_id: string;

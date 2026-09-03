@@ -3,14 +3,17 @@
 import { useEffect, useMemo } from "react";
 import { Asset } from "@/lib/types";
 import { UseMutationResult } from "@tanstack/react-query";
-import { useUpdateAssetLayout } from "@/hooks/use-asset-mutations";
+import {
+  useUpdateAssetsLayout,
+  BulkLayoutUpdate,
+} from "@/hooks/use-asset-mutations";
 
 interface UseCanvasKeyboardOptions {
   folderId: string;
   selectedIds: string[];
   assets: Asset[];
   deleteAssetsMutation: UseMutationResult<string[], Error, string[]>;
-  duplicateAssetMutation: UseMutationResult<Asset, Error, Asset>;
+  duplicateAssetsMutation: UseMutationResult<Asset[], Error, Asset[]>;
   clearSelection: () => void;
   setSelection: (ids: string[]) => void;
 }
@@ -20,11 +23,11 @@ export function useCanvasKeyboard({
   selectedIds,
   assets,
   deleteAssetsMutation,
-  duplicateAssetMutation,
+  duplicateAssetsMutation,
   clearSelection,
   setSelection,
 }: UseCanvasKeyboardOptions) {
-  const updateLayoutMutation = useUpdateAssetLayout(folderId);
+  const updateAssetsMutation = useUpdateAssetsLayout(folderId);
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export function useCanvasKeyboard({
       )
         return;
 
-      // Delete
+      // Delete (already batched)
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         selectedIds.length > 0
@@ -47,7 +50,7 @@ export function useCanvasKeyboard({
         }
       }
 
-      // Duplicate (Ctrl+D)
+      // Duplicate (Ctrl+D) — ONE insert for all selected assets
       if (
         (e.key === "d" || e.key === "D") &&
         (e.ctrlKey || e.metaKey) &&
@@ -58,14 +61,17 @@ export function useCanvasKeyboard({
           if (selectedIdSet.has(a.id)) acc.push(a);
           return acc;
         }, []);
-        const results = await Promise.all(
-          selectedAssets.map((asset) => duplicateAssetMutation.mutateAsync(asset))
+        const results = await duplicateAssetsMutation.mutateAsync(
+          selectedAssets
         );
         const newSelection = results.filter((res) => res?.id).map((res) => res.id);
         setSelection(newSelection);
       }
 
-      // Rotate (R) - 90 degrees clockwise
+      const bulkUpdate = (updates: BulkLayoutUpdate[]) =>
+        updateAssetsMutation.mutateAsync(updates);
+
+      // Rotate (R) - 90 degrees clockwise — ONE upsert
       if (
         (e.key === "r" || e.key === "R") &&
         !e.ctrlKey &&
@@ -74,51 +80,45 @@ export function useCanvasKeyboard({
       ) {
         e.preventDefault();
         const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
-        await Promise.all(
-          selectedAssets.map((asset) =>
-            updateLayoutMutation.mutateAsync({
-              id: asset.id,
-              rotation: (asset.rotation + 90) % 360,
-            })
-          )
+        await bulkUpdate(
+          selectedAssets.map((asset) => ({
+            id: asset.id,
+            rotation: (asset.rotation + 90) % 360,
+          }))
         );
       }
 
-      // Scale In ( + or = )
+      // Scale In ( + or = ) — ONE upsert
       if (
         (e.key === "+" || e.key === "=") &&
         selectedIds.length > 0
       ) {
         e.preventDefault();
         const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
-        await Promise.all(
-          selectedAssets.map((asset) =>
-            updateLayoutMutation.mutateAsync({
-              id: asset.id,
-              scale: Math.min(5, asset.scale + 0.25),
-            })
-          )
+        await bulkUpdate(
+          selectedAssets.map((asset) => ({
+            id: asset.id,
+            scale: Math.min(5, asset.scale + 0.25),
+          }))
         );
       }
 
-      // Scale Out ( - )
+      // Scale Out ( - ) — ONE upsert
       if (
         e.key === "-" &&
         selectedIds.length > 0
       ) {
         e.preventDefault();
         const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
-        await Promise.all(
-          selectedAssets.map((asset) =>
-            updateLayoutMutation.mutateAsync({
-              id: asset.id,
-              scale: Math.max(0.1, asset.scale - 0.25),
-            })
-          )
+        await bulkUpdate(
+          selectedAssets.map((asset) => ({
+            id: asset.id,
+            scale: Math.max(0.1, asset.scale - 0.25),
+          }))
         );
       }
 
-      // Reset Scale (0)
+      // Reset Scale (0) — ONE upsert (uniform values)
       if (
         e.key === "0" &&
         !e.ctrlKey &&
@@ -127,14 +127,12 @@ export function useCanvasKeyboard({
       ) {
         e.preventDefault();
         const selectedAssets = assets.filter((a) => selectedIdSet.has(a.id));
-        await Promise.all(
-          selectedAssets.map((asset) =>
-            updateLayoutMutation.mutateAsync({
-              id: asset.id,
-              scale: 1,
-              rotation: 0,
-            })
-          )
+        await bulkUpdate(
+          selectedAssets.map((asset) => ({
+            id: asset.id,
+            scale: 1,
+            rotation: 0,
+          }))
         );
       }
     };
@@ -147,9 +145,9 @@ export function useCanvasKeyboard({
     selectedIdSet,
     assets,
     deleteAssetsMutation,
-    duplicateAssetMutation,
+    duplicateAssetsMutation,
     clearSelection,
     setSelection,
-    updateLayoutMutation,
+    updateAssetsMutation,
   ]);
 }

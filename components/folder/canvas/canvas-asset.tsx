@@ -35,6 +35,10 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const dragStartPos = useRef({ x: 0, y: 0 });
+  // Serializes rapid successive drops so overlapping UPDATEs can't land
+  // out of order and resurrect a stale position (bring-to-front preserved:
+  // every pointer-up still commits).
+  const dropQueue = useRef<Promise<unknown>>(Promise.resolve());
 
   const [isDeleting, startTransition] = useTransition();
 
@@ -104,12 +108,17 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
       const newZIndex = highestZ + 1;
       setLocalZIndex(newZIndex);
 
-      await updateLayoutMutation.mutateAsync({
-        id: asset.id,
-        x: finalX,
-        y: finalY,
-        z_index: newZIndex,
-      });
+      // Chain onto the queue so a previous in-flight drop settles first.
+      const task = dropQueue.current.then(() =>
+        updateLayoutMutation.mutateAsync({
+          id: asset.id,
+          x: finalX,
+          y: finalY,
+          z_index: newZIndex,
+        })
+      );
+      dropQueue.current = task.catch(() => {});
+      await task;
     };
 
     element.addEventListener("pointermove", handlePointerMove);
