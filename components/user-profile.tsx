@@ -60,26 +60,28 @@ const UserProfile = () => {
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             className="absolute left-1/2 -translate-x-1/2 -translate-y-4/6 mb-3 p-3 bg-glass/90 border border-dark/80 dark:border-white/30 backdrop-blur-xl rounded-2xl shadow-xl flex flex-col gap-2 min-w-50 max-w-60"
           >
-            <div className="px-2 py-1 text-muted-foreground truncate">
-              <span className="font-medium text-xs text-muted-foreground">
-                Signed in as:{" "}
+            <div className="px-2 py-1 flex flex-col gap-0.5 min-w-0">
+              <span className="text-xs font-medium text-muted-foreground">
+                Signed in as:
               </span>
-              <br />
-              <span className="-mt-2 font-normal truncate max-w-2 text-xs text-muted-foreground  ">
+              <span
+                title={user?.email ?? undefined}
+                className="truncate text-xs text-foreground/80"
+              >
                 {user?.email}
               </span>
             </div>
             <div className="h-px bg-black/10 dark:bg-white/20" />
-            <div className="flex items-center justify-between px-2 text-xs text-muted-foreground truncate">
-              <div>Theme toggle</div>
-              <ThemeToggle />
+            <div className="flex items-center justify-between px-2 py-0.5 text-xs text-muted-foreground">
+              <span>Theme toggle</span>
+              <ThemeToggle compact />
             </div>
             <div className="h-px bg-black/10 dark:bg-white/20" />
             <button
               type="button"
               onClick={handleSignOut}
               disabled={isSigningOut}
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-destructive hover:bg-accent cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed rounded-xl text-left"
+              className="flex items-center gap-2 px-2 py-1.5 text-xs text-destructive hover:bg-accent cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed rounded-xl text-left"
             >
               {isSigningOut ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

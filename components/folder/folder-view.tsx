@@ -8,7 +8,7 @@ import FloatingToolbar from "@/components/toolbar/floating-toolbar";
 import UploadZone from "@/components/upload/upload-zone";
 import { ArrowLeft, Folder as FolderIcon } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { updateFolderViewAction } from "@/app/actions/updateFolderView";
 import { FolderActions } from "./folder-context-menu";
 
@@ -20,6 +20,10 @@ export default function FolderView({ folderData }: FolderViewProps) {
   const [currentView, setCurrentView] = useState(() => folderData.view);
   const [, startTransition] = useTransition();
   const zoom = useUIStore((state) => state.camera.zoom);
+  const clearSelection = useUIStore((state) => state.clearSelection);
+
+  useEffect(() => () => clearSelection(), [clearSelection]);
+
 
   const handleViewChange = (view: ViewType) => {
     if (view === folderData.view) return;

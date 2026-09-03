@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAssets } from "@/hooks/use-assets";
 import { useDeleteAssets, useDuplicateAssets } from "@/hooks/use-asset-mutations";
@@ -30,8 +30,10 @@ export default function BoardView({ folderId }: BoardViewProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const columns = useResponsiveColumns(scrollContainerRef);
+  // Callback-ref state (not useRef): the container mounts after the loading
+  // spinner, so the measuring effect must re-run when the element appears.
+  const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
+  const columns = useResponsiveColumns(scrollEl);
 
   useCanvasKeyboard({
     folderId,
@@ -55,7 +57,7 @@ export default function BoardView({ folderId }: BoardViewProps) {
 
   const virtualizer = useVirtualizer({
     count: rowCount,
-    getScrollElement: () => scrollContainerRef.current,
+    getScrollElement: () => scrollEl,
     estimateSize: () => ROW_HEIGHT + GAP,
     overscan: 3,
   });
@@ -78,7 +80,7 @@ export default function BoardView({ folderId }: BoardViewProps) {
 
   return (
     <div
-      ref={scrollContainerRef}
+      ref={setScrollEl}
       className="h-full w-full overflow-y-auto px-8 pt-28 pb-32 bg-background"
       style={{
         backgroundImage: `radial-gradient(circle, var(--grid) 1px, transparent 1.5px)`,

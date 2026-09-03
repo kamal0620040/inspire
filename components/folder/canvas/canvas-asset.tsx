@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback, useTransition } from "react";
 import { Asset } from "@/lib/types";
 import { useUIStore } from "@/store/ui-store";
 import { useUpdateAssetLayout, useDeleteAsset } from "@/hooks/use-asset-mutations";
-import { Trash2, Film, Eye, RotateCw, Loader2 } from "lucide-react";
+import { Trash2, RotateCw, Loader2 } from "lucide-react";
 import LazyImage from "@/components/media/lazy-image";
 import LazyVideo from "@/components/media/lazy-video";
 
@@ -176,6 +176,22 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
     onDoubleClick?.();
   };
 
+  // Overlay is the asset's AXIS-ALIGNED bounding box (scaled + rotated
+  // rect projected to screen axes)
+  const rad = (localRotation * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(rad));
+  const sin = Math.abs(Math.sin(rad));
+  const overlayWidth = width * localScale * cos + height * localScale * sin;
+  const overlayHeight = width * localScale * sin + height * localScale * cos;
+  const overlayX = (width - overlayWidth) / 2;
+  const overlayY = (height - overlayHeight) / 2;
+
+  const chromeVisibility = isSelected
+    ? "opacity-100"
+    : "opacity-0 group-hover:opacity-100";
+
+
+
   return (
     <motion.div
       ref={containerRef}
@@ -188,95 +204,95 @@ export default function CanvasAsset({ asset, folderId, onDoubleClick }: CanvasAs
         zIndex: localZIndex,
         width,
         height,
-        rotate: localRotation,
-        scale: localScale,
       }}
-      className={`absolute canvas-asset rounded-2xl bg-glass border backdrop-blur-sm shadow-lg overflow-hidden group cursor-pointer transition-shadow hover:shadow-xl ${
-        isSelected
-          ? "border-blue-500 ring-2 ring-blue-500/20 shadow-blue-500/10"
-          : "border-white/40 hover:border-white/60"
-      }`}
+      className="absolute canvas-asset group cursor-pointer"
     >
-      {/* Media Rendering */}
-      <div className={`w-full h-full relative select-none pointer-events-none ${isDeleting ? 'opacity-50' : ''}`}>
-        {isDeleting && (
-          <Loader2 className="absolute z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 text-white animate-spin" />
-        )}
-        {asset.type === "image" ? (
-          <LazyImage
-            src={asset.url}
-            thumbnailSrc={asset.thumbnail_url}
-            alt={asset.file_name || "Canvas Image"}
-          />
-        ) : (
-          <LazyVideo
-            src={asset.url}
-            thumbnailSrc={asset.thumbnail_url}
-          />
-        )}
+      {/* Visual asset box (scaled/rotated, clips media) */}
+      <div
+        style={{
+          transform: `rotate(${localRotation}deg) scale(${localScale})`,
+        }}
+        className={`absolute inset-0 rounded-2xl bg-glass border backdrop-blur-sm shadow-lg overflow-hidden transition-shadow hover:shadow-xl ${
+          isSelected
+            ? "border-blue-500 ring-2 ring-blue-500 shadow-blue-500/10"
+            : "border-white/40 hover:border-white/60"
+        }`}
+      >
+        {/* Media Rendering */}
+        <div className={`w-full h-full relative select-none pointer-events-none ${isDeleting ? 'opacity-50' : ''}`}>
+          {isDeleting && (
+            <Loader2 className="absolute z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 text-white animate-spin" />
+          )}
+          {asset.type === "image" ? (
+            <LazyImage
+              src={asset.url}
+              thumbnailSrc={asset.thumbnail_url}
+              alt={asset.file_name || "Canvas Image"}
+            />
+          ) : (
+            <LazyVideo
+              src={asset.url}
+              thumbnailSrc={asset.thumbnail_url}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Floating control overlay on hover */}
+      {/* Screen-space chrome overlay (constant size, AABB-anchored) */}
       {currentTool === "select" && (
-        <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-auto">
-          <button
-            type="button"
-            onClick={handleRotate}
-            className="p-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white shadow-md active:scale-95 transition-all cursor-pointer"
-            title="Rotate 90°"
+        <div
+          style={{
+            left: overlayX,
+            top: overlayY,
+            width: overlayWidth,
+            height: overlayHeight,
+          }}
+          className="absolute pointer-events-none"
+        >
+          {/* Unified toolbar: floats above the image, never covers content */}
+          <div
+            onDoubleClick={(e) => e.stopPropagation()}
+            className={`absolute -top-[52px] left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-glass/85 border border-black/10 dark:border-white/15 shadow-xl backdrop-blur-xl p-1 pointer-events-auto transition-opacity ${chromeVisibility}`}
           >
-            <RotateCw className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="p-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white shadow-md active:scale-95 transition-all cursor-pointer"
-            title="Delete Asset"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+            <button
+              type="button"
+              onClick={handleRotate}
+              className="h-8 w-8 rounded-full text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+              title="Rotate 90°"
+            >
+              <RotateCw className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+              title="Delete Asset"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <div className="h-5 w-px bg-black/10 dark:bg-white/15 mx-0.5" />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); handleScaleChange(localScale - 0.25); }}
+              className="h-8 w-8 rounded-full text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 text-sm font-bold transition-colors cursor-pointer flex items-center justify-center"
+              title="Zoom Out"
+            >
+              −
+            </button>
+            <span className="text-muted-foreground text-xs font-medium min-w-[44px] text-center select-none">
+              {Math.round(localScale * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); handleScaleChange(localScale + 0.25); }}
+              className="h-8 w-8 rounded-full text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 text-sm font-bold transition-colors cursor-pointer flex items-center justify-center"
+              title="Zoom In"
+            >
+              +
+            </button>
+          </div>
         </div>
       )}
-
-      {/* Scale controls when selected */}
-      {isSelected && currentTool === "select" && (
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-auto">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); handleScaleChange(localScale - 0.25); }}
-            className="p-1 rounded bg-black/60 hover:bg-black/80 text-white text-xs font-bold transition-colors cursor-pointer"
-            title="Zoom Out"
-          >
-            −
-          </button>
-          <span className="p-1 bg-black/60 rounded text-white text-[10px] font-medium min-w-[40px] text-center">
-            {Math.round(localScale * 100)}%
-          </span>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); handleScaleChange(localScale + 0.25); }}
-            className="p-1 rounded bg-black/60 hover:bg-black/80 text-white text-xs font-bold transition-colors cursor-pointer"
-            title="Zoom In"
-          >
-            +
-          </button>
-        </div>
-      )}
-
-      {/* Media Type Icon Badge */}
-      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded-md bg-black/40 text-white/95 text-[10px] font-medium flex items-center gap-1 select-none pointer-events-none z-10 backdrop-blur-md">
-        {asset.type === "video" ? (
-          <>
-            <Film className="h-3 w-3" />
-            Video
-          </>
-        ) : (
-          <>
-            <Eye className="h-3 w-3" />
-            Image
-          </>
-        )}
-      </div>
     </motion.div>
   );
 }

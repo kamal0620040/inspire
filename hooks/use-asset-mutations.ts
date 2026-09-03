@@ -75,33 +75,32 @@ export function useUpdateAssetLayout(folderId: string) {
   });
 }
 
-export interface BulkLayoutUpdate extends LayoutPatch {
-  id: string;
-}
 
-// Batched version: ONE upsert for K assets instead of K single-row UPDATEs.
-// Handles heterogeneous values (e.g. each asset rotated +90 from its own base).
-export function useUpdateAssetsLayout(folderId: string) {
+export function useUpdateAssetsUniform(folderId: string) {
   const supabase = createClient();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (updates: BulkLayoutUpdate[]) => {
-      if (updates.length === 0) return [];
-
-      const rows = updates.map(({ id, ...patch }) => ({
-        id,
-        ...patch,
-        updated_at: new Date().toISOString(),
-      }));
+    mutationFn: async ({
+      ids,
+      values,
+    }: {
+      ids: string[];
+      values: LayoutPatch;
+    }) => {
+      if (ids.length === 0) return [] as Asset[];
 
       const { data, error } = await supabase
         .from("assets")
-        .upsert(rows, { onConflict: "id" })
+        .update({ ...values, updated_at: new Date().toISOString() })
+        .in("id", ids)
         .select();
 
       if (error) throw error;
-      return data;
+      return (data ?? []) as Asset[];
+    },
+    onError: (error) => {
+      console.error("Bulk layout update failed:", error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets", folderId] });

@@ -158,12 +158,13 @@ export default function CanvasView({ folderId }: CanvasViewProps) {
 
         {selectionBox && (
           <div
-            className="absolute border border-blue-500 bg-blue-500/10 rounded-sm pointer-events-none z-50"
+            className="absolute border border-blue-500 bg-blue-500/10 rounded-sm pointer-events-none"
             style={{
               left: Math.min(selectionBox.startX, selectionBox.currentX),
               top: Math.min(selectionBox.startY, selectionBox.currentY),
               width: Math.abs(selectionBox.currentX - selectionBox.startX),
               height: Math.abs(selectionBox.currentY - selectionBox.startY),
+              zIndex: Number.MAX_SAFE_INTEGER,
             }}
           />
         )}

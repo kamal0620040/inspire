@@ -4,7 +4,7 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -17,7 +17,11 @@ export default function ThemeToggle() {
     return (
       <button
         type="button"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border"
+        className={
+          compact
+            ? "inline-flex h-8 w-8 items-center justify-center rounded-full"
+            : "inline-flex h-10 w-10 items-center justify-center rounded-lg border"
+        }
         aria-label="Toggle theme"
         suppressHydrationWarning
       />
@@ -25,19 +29,20 @@ export default function ThemeToggle() {
   }
 
   const isDark = resolvedTheme === "dark";
+  const Icon = isDark ? Sun : Moon;
 
   return (
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-lg border transition hover:bg-accent"
+      className={
+        compact
+          ? "inline-flex cursor-pointer h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-accent hover:text-foreground"
+          : "inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-lg border transition hover:bg-accent"
+      }
       aria-label="Toggle theme"
     >
-      {isDark ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
+      <Icon className={compact ? "h-4 w-4" : "h-5 w-5"} />
     </button>
   );
 }
